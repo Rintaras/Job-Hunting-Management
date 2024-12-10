@@ -1,19 +1,21 @@
 <?php
 require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 $pdo = getPdoConnection();
 
 $step = 1;
-$email = '';
+$account_id = '';
 $secret_question = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['check_email'])) {
-        $email = $_POST['email'] ?? '';
-        if ($email) {
-            $stmt = $pdo->prepare("SELECT secret_question FROM users WHERE account_ID=?");
-            $stmt->execute([$email]);
+    if (isset($_POST['check_account'])) {
+        // Step1: アカウントID確認
+        $account_id = $_POST['account_id'] ?? '';
+        if ($account_id) {
+            $stmt = $pdo->prepare("SELECT secret_question FROM users WHERE account_id=?");
+            $stmt->execute([$account_id]);
             $user = $stmt->fetch();
             if ($user && !empty($user['secret_question'])) {
                 $secret_question = $user['secret_question'];
@@ -25,24 +27,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'アカウントIDを入力してください。';
         }
     } elseif (isset($_POST['reset_password'])) {
-        $email = $_POST['email'] ?? '';
+        // Step2: 合言葉の回答と新パスワード確認
+        $account_id = $_POST['account_id'] ?? '';
         $secret_answer = $_POST['secret_answer'] ?? '';
         $new_password = $_POST['new_password'] ?? '';
 
-        $stmt = $pdo->prepare("SELECT id, secret_answer_hash FROM users WHERE email=?");
-        $stmt->execute([$email]);
+        $stmt = $pdo->prepare("SELECT id, secret_answer_hash FROM users WHERE account_id=?");
+        $stmt->execute([$account_id]);
         $user = $stmt->fetch();
         if ($user && password_verify($secret_answer, $user['secret_answer_hash'])) {
+            // パスワード更新
             if (!empty($new_password)) {
                 $new_hash = password_hash($new_password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare("UPDATE users SET password_hash=?, updated_at=NOW() WHERE id=?");
                 $stmt->execute([$new_hash, $user['id']]);
+                // パスワード再設定完了後、ログインページへ
                 redirect('login.php');
             } else {
                 $error = '新しいパスワードを入力してください。';
                 $step = 2;
-                $stmt = $pdo->prepare("SELECT secret_question FROM users WHERE email=?");
-                $stmt->execute([$email]);
+                // secret_question再取得
+                $stmt = $pdo->prepare("SELECT secret_question FROM users WHERE account_id=?");
+                $stmt->execute([$account_id]);
                 $user2 = $stmt->fetch();
                 if ($user2) {
                     $secret_question = $user2['secret_question'];
@@ -51,8 +57,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = '秘密の合言葉が正しくありません。';
             $step = 2;
-            $stmt = $pdo->prepare("SELECT secret_question FROM users WHERE email=?");
-            $stmt->execute([$email]);
+            // secret_question再取得
+            $stmt = $pdo->prepare("SELECT secret_question FROM users WHERE account_id=?");
+            $stmt->execute([$account_id]);
             $user2 = $stmt->fetch();
             if ($user2) {
                 $secret_question = $user2['secret_question'];
@@ -70,17 +77,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php if ($step === 1): ?>
 <form method="post">
-  <input type="hidden" name="check_email" value="1">
+  <input type="hidden" name="check_account" value="1">
   <div class="mb-3">
-    <label class="form-label">アカウントID</label>
-    <input type="email" name="email" class="form-control" required>
+    <label class="form-label">登録アカウントID</label>
+    <input type="text" name="account_id" class="form-control" required>
   </div>
   <button type="submit" class="btn btn-primary w-100">秘密の質問を確認</button>
 </form>
 <?php elseif ($step === 2): ?>
 <form method="post">
   <input type="hidden" name="reset_password" value="1">
-  <input type="hidden" name="email" value="<?php echo htmlspecialchars($email, ENT_QUOTES, 'UTF-8'); ?>">
+  <input type="hidden" name="account_id" value="<?php echo htmlspecialchars($account_id, ENT_QUOTES, 'UTF-8'); ?>">
   <div class="mb-3">
     <label class="form-label">秘密の質問</label>
     <input type="text" class="form-control" value="<?php echo htmlspecialchars($secret_question, ENT_QUOTES, 'UTF-8'); ?>" disabled>
