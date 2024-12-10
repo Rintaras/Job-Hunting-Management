@@ -1,0 +1,79 @@
+body {
+    font-family: sans-serif;
+    background: #f8f9fa;
+    margin: 0;
+    padding: 0;
+}
+
+.hero-section {
+    background: repeating-radial-gradient(circle at 0 0, #ffe4e1, #ffe4e1 10px, #ffd700 10px, #ffd700 20px);
+    background-size: 40px 40px;
+    padding: 5rem 1rem;
+    text-align: center;
+    color: #333;
+    position: relative;
+}
+
+.hero-section h1 {
+    font-weight: bold;
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+.hero-section p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.btn-primary {
+    background-color: #ff7f50;
+    border-color: #ff7f50;
+}
+.btn-primary:hover {
+    background-color: #ff6347;
+    border-color: #ff6347;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.25rem;
+    color: #ffffff !important;
+}
+
+.card {
+    border-radius: 10px;
+    border: none;
+    background-color: #ffffffcc;
+    backdrop-filter: blur(5px);
+}
+
+.footer {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* ログインやリセットページ用フォーム */
+.form-container {
+    max-width: 400px;
+    margin: 2rem auto;
+    background: #ffffffcc;
+    backdrop-filter: blur(5px);
+    padding: 2rem;
+    border-radius: 10px;
+}
+
+.profile-icon {
+    display: block;
+    margin: 0 auto 1rem;
+    max-width: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+
+/* カルーセルのテキストカラー微調整 */
+.carousel-item h5 {
+    color: #333;
+}
+.carousel-item p {
+    color: #555;
+}
